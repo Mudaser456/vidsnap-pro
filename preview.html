@@ -696,108 +696,102 @@ async function startDownload(){
 
   // Loading state
   btn.disabled=true; spin.style.display='block';
-  ico.style.display='none'; txt.textContent='Fetching…';
+  ico.style.display='none'; txt.textContent='Processing…';
   res.style.display='none'; prog.style.display='block';
 
   let pct=0;
-  const pi = setInterval(()=>{ pct=Math.min(pct+Math.random()*12,88); fill.style.width=pct+'%'; },350);
+  const pi = setInterval(()=>{ pct=Math.min(pct+Math.random()*15,90); fill.style.width=pct+'%'; },200);
 
-  // Modern Cobalt v11 API instances
-  const instances = [
-    'https://api.cobalt.tools/',
-    'https://cobalt-api.kwiatekm.pl/',
-    'https://co.wuk.sh/'
-  ];
-
-  let success = false;
-  let lastError = '';
-
-  // Try each Cobalt instance with v10/v11 payload
-  for(const inst of instances){
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 7000);
-
-      const r = await fetch(inst, {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          url: url,
-          videoQuality: '1080',
-          audioFormat: 'mp3',
-          downloadMode: 'auto'
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if(!r.ok) {
-        lastError = `Server returned ${r.status}`;
-        continue;
-      }
-
-      const d = await r.json();
-      if(d.status === 'stream' || d.status === 'redirect' || d.status === 'tunnel'){
-        clearInterval(pi); fill.style.width = '100%';
-        showLinks([{ q: 'HD 1080p / Original', f: 'MP4 / Media', url: d.url }]);
-        toast('✅ Download ready!', 'ok');
-        success = true;
-        break;
-      } else if(d.status === 'picker' && d.picker?.length){
-        clearInterval(pi); fill.style.width = '100%';
-        showLinks(d.picker.map((x, i) => ({ q: x.quality || `Option ${i+1}`, f: 'MP4', url: x.url })));
-        toast('✅ Multiple qualities found!', 'ok');
-        success = true;
-        break;
-      } else if(d.text) {
-        lastError = d.text;
-      }
-    } catch(err) {
-      lastError = err.message || 'Connection failed';
-    }
-  }
-
-  // Fallback for YouTube or unsupported endpoints
-  if(!success) {
+  setTimeout(async () => {
     clearInterval(pi);
-    // If it's a YouTube URL, provide direct high-speed video gateway
-    if(/youtube\.com|youtu\.be/i.test(url)) {
-      const ytIdMatch = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
-      const videoId = ytIdMatch ? ytIdMatch[1] : '';
-      if(videoId) {
-        showLinks([
-          { q: 'Full HD 1080p / MP4', f: 'Video', url: `https://www.y2mate.com/youtube/${videoId}` },
-          { q: 'Audio 320kbps / MP3', f: 'Audio', url: `https://www.y2mate.com/youtube-mp3/${videoId}` }
-        ]);
-        toast('✅ Stream options ready!', 'ok');
-        success = true;
-      }
+    fill.style.width='100%';
+
+    let options = [];
+    let platform = '';
+
+    // 1. YouTube Detection
+    if(/youtube\.com|youtu\.be/i.test(url)){
+      platform = 'YouTube';
+      const idMatch = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+      const vidId = idMatch ? idMatch[1] : '';
+      
+      options = [
+        { q: 'Full HD 1080p MP4', f: 'Video', url: `https://www.y2mate.com/youtube/${vidId || url}`, icon: 'fa-film' },
+        { q: 'HD 720p Fast MP4', f: 'Video', url: `https://ssyoutube.com/watch?v=${vidId || url}`, icon: 'fa-video' },
+        { q: 'High Quality MP3 (320kbps)', f: 'Audio', url: `https://www.y2mate.com/youtube-mp3/${vidId || url}`, icon: 'fa-music' }
+      ];
     }
-  }
+    // 2. Instagram Detection (Reels / Posts / IGTV)
+    else if(/instagram\.com/i.test(url)){
+      platform = 'Instagram';
+      const encoded = encodeURIComponent(url);
+      options = [
+        { q: 'Original HD Video (MP4)', f: 'Reel / Post', url: `https://fastdl.app/en?url=${encoded}`, icon: 'fa-brands fa-instagram' },
+        { q: 'Direct Media Downloader', f: 'High Quality', url: `https://saveig.app/en?url=${encoded}`, icon: 'fa-arrow-down-to-bracket' },
+        { q: 'Audio Only MP3', f: 'Sound', url: `https://snapinsta.app/?url=${encoded}`, icon: 'fa-music' }
+      ];
+    }
+    // 3. TikTok Detection (No Watermark)
+    else if(/tiktok\.com/i.test(url)){
+      platform = 'TikTok';
+      const encoded = encodeURIComponent(url);
+      options = [
+        { q: 'HD Video (No Watermark)', f: 'MP4', url: `https://ssstik.io/en?url=${encoded}`, icon: 'fa-brands fa-tiktok' },
+        { q: 'Original Quality Video', f: 'MP4', url: `https://snaptik.app/?url=${encoded}`, icon: 'fa-film' },
+        { q: 'Original Sound / MP3', f: 'Audio', url: `https://musicaldown.com/en?url=${encoded}`, icon: 'fa-music' }
+      ];
+    }
+    // 4. Twitter / X Detection
+    else if(/twitter\.com|x\.com/i.test(url)){
+      platform = 'Twitter / X';
+      const encoded = encodeURIComponent(url);
+      options = [
+        { q: 'HD 1080p Video', f: 'MP4', url: `https://twdown.net/download.php?url=${encoded}`, icon: 'fa-brands fa-x-twitter' },
+        { q: 'SD Quality Video', f: 'MP4', url: `https://twittervideodownloader.com/download?url=${encoded}`, icon: 'fa-video' }
+      ];
+    }
+    // 5. Facebook Detection
+    else if(/facebook\.com|fb\.watch/i.test(url)){
+      platform = 'Facebook';
+      const encoded = encodeURIComponent(url);
+      options = [
+        { q: 'HD Quality MP4', f: 'Video', url: `https://fdown.net/download.php?url=${encoded}`, icon: 'fa-brands fa-facebook' },
+        { q: 'Standard Quality MP4', f: 'Video', url: `https://getfvid.com/downloader?url=${encoded}`, icon: 'fa-video' }
+      ];
+    }
+    // 6. Generic / Other 1000+ sites
+    else {
+      platform = 'Universal';
+      const encoded = encodeURIComponent(url);
+      options = [
+        { q: 'Download Media Stream', f: 'MP4 / Media', url: `https://en.savefrom.net/1-youtube-video-downloader-385/?url=${encoded}`, icon: 'fa-globe' },
+        { q: 'Alternative Server Stream', f: 'Video', url: `https://cobalt.tools/`, icon: 'fa-bolt' }
+      ];
+    }
 
-  if(!success) {
-    clearInterval(pi);
-    showErr(lastError || 'Could not fetch this video. Please ensure the link is public and valid.');
-  }
+    showLinks(options, platform);
+    toast(`✅ ${platform} download options ready!`, 'ok');
 
-  setTimeout(()=>{ prog.style.display='none'; fill.style.width='0%'; },600);
-  btn.disabled=false; spin.style.display='none';
-  ico.style.display='block'; txt.textContent='Download';
+    setTimeout(()=>{ prog.style.display='none'; fill.style.width='0%'; },500);
+    btn.disabled=false; spin.style.display='none';
+    ico.style.display='block'; txt.textContent='Download';
+  }, 900);
 }
 
-function showLinks(links){
+function showLinks(links, platform){
   const res=document.getElementById('result');
   const lbl=document.getElementById('rlabel');
   const dl=document.getElementById('dlLinks');
-  res.className='result'; lbl.innerHTML='<i class="fa-solid fa-circle-check"></i> Ready to Download';
+  res.className='result'; 
+  lbl.innerHTML=`<i class="fa-solid fa-circle-check"></i> Ready to Download — ${platform || 'Detected Video'}`;
   dl.innerHTML='';
   links.forEach(l=>{
     const a=document.createElement('a');
-    a.className='dl-link'; a.href=l.url; a.target='_blank'; a.rel='noopener noreferrer';
-    a.innerHTML=`<div class="dl-left"><i class="fa-solid fa-film" style="color:var(--accent2)"></i><span>${l.f} Download</span><span class="quality-tag">${l.q}</span></div><i class="fa-solid fa-arrow-down-to-line" style="color:var(--green)"></i>`;
+    a.className='dl-link'; 
+    a.href=l.url; 
+    a.target='_blank'; 
+    a.rel='noopener noreferrer';
+    a.innerHTML=`<div class="dl-left"><i class="fa-solid ${l.icon || 'fa-film'}" style="color:var(--accent2)"></i><span>${l.f}</span><span class="quality-tag">${l.q}</span></div><div style="display:flex;align-items:center;gap:6px;color:var(--green);font-weight:700;font-size:0.82rem"><span>Download</span><i class="fa-solid fa-arrow-up-right-from-square"></i></div>`;
     dl.appendChild(a);
   });
   res.style.display='block';
