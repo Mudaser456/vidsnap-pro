@@ -702,45 +702,90 @@ async function startDownload(){
   let pct=0;
   const pi = setInterval(()=>{ pct=Math.min(pct+Math.random()*12,88); fill.style.width=pct+'%'; },350);
 
-  try{
-    // Try Cobalt API
-    const r = await fetch('https://api.cobalt.tools/api/json',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','Accept':'application/json'},
-      body:JSON.stringify({
-        url, vCodec:'h264', vQuality:'1080',
-        aFormat:'mp3', isAudioOnly:false,
-        isNoTTWatermark:true, twitterGif:false
-      })
-    });
-    clearInterval(pi); fill.style.width='100%';
+  // Modern Cobalt v11 API instances
+  const instances = [
+    'https://api.cobalt.tools/',
+    'https://cobalt-api.kwiatekm.pl/',
+    'https://co.wuk.sh/'
+  ];
 
-    if(!r.ok) throw new Error(`HTTP ${r.status}`);
-    const d = await r.json();
+  let success = false;
+  let lastError = '';
 
-    if(d.status==='stream'||d.status==='redirect'||d.status==='tunnel'){
-      showLinks([{q:'HD 1080p',f:'MP4',url:d.url}]);
-      toast('✅ Download ready!','ok');
-    } else if(d.status==='picker'&&d.picker?.length){
-      showLinks(d.picker.map((x,i)=>({q:x.quality||`Option ${i+1}`,f:'MP4',url:x.url})));
-      toast('✅ Multiple qualities found!','ok');
-    } else {
-      showErr(d.text||'Could not fetch this video. It may be private or unsupported.');
+  // Try each Cobalt instance with v10/v11 payload
+  for(const inst of instances){
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 7000);
+
+      const r = await fetch(inst, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          url: url,
+          videoQuality: '1080',
+          audioFormat: 'mp3',
+          downloadMode: 'auto'
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if(!r.ok) {
+        lastError = `Server returned ${r.status}`;
+        continue;
+      }
+
+      const d = await r.json();
+      if(d.status === 'stream' || d.status === 'redirect' || d.status === 'tunnel'){
+        clearInterval(pi); fill.style.width = '100%';
+        showLinks([{ q: 'HD 1080p / Original', f: 'MP4 / Media', url: d.url }]);
+        toast('✅ Download ready!', 'ok');
+        success = true;
+        break;
+      } else if(d.status === 'picker' && d.picker?.length){
+        clearInterval(pi); fill.style.width = '100%';
+        showLinks(d.picker.map((x, i) => ({ q: x.quality || `Option ${i+1}`, f: 'MP4', url: x.url })));
+        toast('✅ Multiple qualities found!', 'ok');
+        success = true;
+        break;
+      } else if(d.text) {
+        lastError = d.text;
+      }
+    } catch(err) {
+      lastError = err.message || 'Connection failed';
     }
-
-  } catch(e){
-    clearInterval(pi);
-    // If CORS/network error, show helpful message
-    if(e.message.includes('fetch')||e.name==='TypeError'){
-      showErr('Network error — make sure you are connected to the internet. (CORS may block on localhost; will work fine on live Blogger site.)');
-    } else {
-      showErr('Error: '+e.message);
-    }
-  } finally {
-    setTimeout(()=>{ prog.style.display='none'; fill.style.width='0%'; },600);
-    btn.disabled=false; spin.style.display='none';
-    ico.style.display='block'; txt.textContent='Download';
   }
+
+  // Fallback for YouTube or unsupported endpoints
+  if(!success) {
+    clearInterval(pi);
+    // If it's a YouTube URL, provide direct high-speed video gateway
+    if(/youtube\.com|youtu\.be/i.test(url)) {
+      const ytIdMatch = url.match(/(?:v=|youtu\.be\/|shorts\/)([a-zA-Z0-9_-]{11})/);
+      const videoId = ytIdMatch ? ytIdMatch[1] : '';
+      if(videoId) {
+        showLinks([
+          { q: 'Full HD 1080p / MP4', f: 'Video', url: `https://www.y2mate.com/youtube/${videoId}` },
+          { q: 'Audio 320kbps / MP3', f: 'Audio', url: `https://www.y2mate.com/youtube-mp3/${videoId}` }
+        ]);
+        toast('✅ Stream options ready!', 'ok');
+        success = true;
+      }
+    }
+  }
+
+  if(!success) {
+    clearInterval(pi);
+    showErr(lastError || 'Could not fetch this video. Please ensure the link is public and valid.');
+  }
+
+  setTimeout(()=>{ prog.style.display='none'; fill.style.width='0%'; },600);
+  btn.disabled=false; spin.style.display='none';
+  ico.style.display='block'; txt.textContent='Download';
 }
 
 function showLinks(links){
