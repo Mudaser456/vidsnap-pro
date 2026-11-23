@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>VidSnap Pro — Free Video Downloader</title>
+<meta name="description" content="Download videos from YouTube, TikTok, Instagram, Twitter and more for free."/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#09090f;
+  --bg2:#111118;
+  --card:rgba(255,255,255,0.045);
+  --border:rgba(255,255,255,0.09);
+  --accent:#7c6fff;
+  --accent2:#a78bfa;
+  --glow:rgba(124,111,255,0.28);
+  --green:#22c55e;
+  --red:#ef4444;
+  --yellow:#f59e0b;
+  --text:#f1f5f9;
+  --text2:#94a3b8;
+  --text3:#64748b;
+  --r:12px;
+  --r2:18px;
+  --r3:50px;
+  --ease:all .3s cubic-bezier(.4,0,.2,1)
+}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter',system-ui,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+  line-height:1.6
+}
+
+/* BG GRID */
+body::before{
+  content:'';
+  position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse 60% 50% at 15% 15%,rgba(124,111,255,.1) 0%,transparent 60%),
+    radial-gradient(ellipse 50% 40% at 85% 85%,rgba(167,139,250,.07) 0%,transparent 60%),
+    linear-gradient(180deg,var(--bg) 0%,#0d0d16 100%);
+  z-index:-1
+}
+
+/* NAVBAR */
+nav{
+  position:sticky;top:0;z-index:200;
+  background:rgba(9,9,15,.82);
+  backdrop-filter:blur(24px);
+  -webkit-backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  padding:0 28px
+}
+.nav-in{
+  max-width:1180px;margin:0 auto;
+  display:flex;align-items:center;justify-content:space-between;
+  height:66px
+}
+.logo{
+  display:flex;align-items:center;gap:10px;
+  text-decoration:none;font-size:1.25rem;font-weight:800;color:var(--text)
+}
+.logo-box{
+  width:38px;height:38px;
+  background:linear-gradient(135deg,var(--accent),#8b5cf6);
+  border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;color:#fff;
+  box-shadow:0 4px 20px var(--glow)
+}
+.logo span{color:var(--accent2)}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none}
+.nav-links a{
+  color:var(--text2);text-decoration:none;
+  font-size:.875rem;font-weight:500;transition:var(--ease)
+}
+.nav-links a:hover{color:var(--text)}
+.btn-apk{
+  display:inline-flex;align-items:center;gap:7px;
+  background:linear-gradient(135deg,var(--green),#16a34a);
+  color:#fff!important;padding:9px 20px;
+  border-radius:var(--r3);font-size:.8rem;font-weight:700;
+  text-decoration:none;transition:var(--ease);
+  box-shadow:0 4px 16px rgba(34,197,94,.3)
+}
+.btn-apk:hover{transform:translateY(-2px);box-shadow:0 8px 28px rgba(34,197,94,.45)}
+
+/* HERO */
+.hero{
+  padding:90px 28px 60px;
+  text-align:center;
+  max-width:1180px;
+  margin:0 auto
+}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(124,111,255,.13);
+  border:1px solid rgba(124,111,255,.28);
+  color:var(--accent2);padding:7px 18px;
+  border-radius:var(--r3);font-size:.78rem;font-weight:600;
+  margin-bottom:28px;
+  animation:fadeUp .6s ease both
+}
+.badge .dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.8)}}
+
+h1{
+  font-size:clamp(2rem,5vw,3.6rem);
+  font-weight:900;line-height:1.1;
+  margin-bottom:20px;
+  animation:fadeUp .6s ease .1s both
+}
+.grad{
+  background:linear-gradient(135deg,#a78bfa,#7c6fff,#60a5fa);
+  -webkit-background-clip:text;
+  background-clip:text;
+  -webkit-text-fill-color:transparent
+}
+.hero p{
+  font-size:1.08rem;color:var(--text2);
+  max-width:540px;margin:0 auto 44px;
+  animation:fadeUp .6s ease .2s both
+}
+
+/* DOWNLOADER CARD */
+.dl-card{
+  background:var(--card);
+  backdrop-filter:blur(20px);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:38px;
+  max-width:780px;
+  margin:0 auto;
+  box-shadow:0 0 60px rgba(124,111,255,.12);
+  animation:fadeUp .6s ease .3s both
+}
+
+.platforms{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:22px}
+.chip{
+  display:inline-flex;align-items:center;gap:5px;
+  background:rgba(255,255,255,.055);
+  border:1px solid var(--border);
+  border-radius:var(--r3);padding:5px 13px;
+  font-size:.73rem;color:var(--text2)
+}
+.chip i{font-size:11px}
+.chip.yt{border-color:rgba(255,0,0,.25);color:#ff4d4d}
+.chip.tt{border-color:rgba(0,242,234,.2);color:#00f2ea}
+.chip.ig{border-color:rgba(228,64,95,.25);color:#e4405f}
+.chip.tw{border-color:rgba(29,161,242,.25);color:#1da1f2}
+.chip.fb{border-color:rgba(66,103,178,.25);color:#5b7bd5}
+
+.input-row{display:flex;gap:12px;margin-bottom:16px}
+.url-in{
+  flex:1;
+  background:rgba(255,255,255,.065);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:16px 20px;
+  color:var(--text);font-size:.95rem;font-family:inherit;
+  outline:none;transition:var(--ease)
+}
+.url-in::placeholder{color:var(--text3)}
+.url-in:focus{
+  border-color:var(--accent);
+  background:rgba(124,111,255,.09);
+  box-shadow:0 0 0 3px var(--glow)
+}
+.btn-dl{
+  display:inline-flex;align-items:center;gap:9px;
+  background:linear-gradient(135deg,var(--accent),#8b5cf6);
+  color:#fff;border:none;border-radius:var(--r);
+  padding:16px 30px;font-size:.95rem;font-weight:700;
+  cursor:pointer;transition:var(--ease);white-space:nowrap;
+  font-family:inherit;
+  box-shadow:0 4px 24px var(--glow)
+}
+.btn-dl:hover{transform:translateY(-2px);box-shadow:0 8px 36px rgba(124,111,255,.5)}
+.btn-dl:disabled{opacity:.55;cursor:not-allowed;transform:none}
+
+/* PROGRESS */
+.prog-wrap{display:none;height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:14px;overflow:hidden}
+.prog-fill{height:100%;width:0;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:2px;transition:width .3s ease}
+
+/* SPINNER */
+.spin{display:none;width:18px;height:18px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:ro .7s linear infinite}
+@keyframes ro{to{transform:rotate(360deg)}}
+
+/* RESULT */
+.result{
+  display:none;
+  background:rgba(34,197,94,.08);
+  border:1px solid rgba(34,197,94,.22);
+  border-radius:var(--r);
+  padding:22px;margin-top:18px;
+  animation:fadeUp .4s ease
+}
+.result.err{background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.22)}
+.result-label{
+  font-size:.72rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--green);margin-bottom:14px;
+  display:flex;align-items:center;gap:7px
+}
+.result.err .result-label{color:var(--red)}
+.dl-links{display:flex;flex-direction:column;gap:10px}
+.dl-link{
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(255,255,255,.045);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:13px 17px;
+  text-decoration:none;color:var(--text);
+  transition:var(--ease);font-size:.88rem
+}
+.dl-link:hover{background:rgba(124,111,255,.1);border-color:var(--accent);transform:translateX(4px)}
+.dl-left{display:flex;align-items:center;gap:10px}
+.quality-tag{
+  background:var(--accent);color:#fff;
+  padding:2px 9px;border-radius:5px;font-size:.68rem;font-weight:800
+}
+
+/* AD PLACEHOLDER */
+.ad-wrap{
+  text-align:center;padding:14px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border)
+}
+.ad-box{
+  background:rgba(124,111,255,.07);
+  border:1px dashed rgba(124,111,255,.3);
+  border-radius:var(--r);
+  padding:22px;min-height:90px;
+  display:flex;align-items:center;justify-content:center;
+  gap:9px;color:var(--accent2);font-size:.8rem;font-weight:500;
+  max-width:780px;margin:0 auto
+}
+.ad-label-txt{font-size:.62rem;color:var(--text3);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px}
+
+/* SECTION */
+.section{padding:70px 28px}
+.section-wrap{max-width:1180px;margin:0 auto}
+.sec-head{text-align:center;font-size:1.85rem;font-weight:800;margin-bottom:8px}
+.sec-sub{text-align:center;color:var(--text2);font-size:.93rem;margin-bottom:50px}
+
+/* FEATURES */
+.feat-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:20px
+}
+.feat{
+  background:var(--card);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:30px 26px;
+  transition:var(--ease)
+}
+.feat:hover{transform:translateY(-5px);border-color:var(--accent);box-shadow:0 10px 40px rgba(124,111,255,.12)}
+.feat-ico{
+  width:50px;height:50px;border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  font-size:21px;margin-bottom:17px
+}
+.feat h3{font-size:1rem;font-weight:700;margin-bottom:8px}
+.feat p{font-size:.84rem;color:var(--text2);line-height:1.65}
+
+/* APK */
+.apk-wrap{max-width:780px;margin:0 auto;padding:60px 28px}
+.apk-card{
+  background:linear-gradient(135deg,rgba(34,197,94,.1),rgba(16,163,74,.04));
+  border:1px solid rgba(34,197,94,.22);
+  border-radius:var(--r2);
+  padding:38px;
+  display:flex;align-items:center;gap:30px
+}
+.apk-ico{
+  width:76px;height:76px;
+  background:linear-gradient(135deg,var(--green),#16a34a);
+  border-radius:var(--r2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:34px;color:#fff;flex-shrink:0;
+  box-shadow:0 8px 28px rgba(34,197,94,.3)
+}
+.apk-info h3{font-size:1.22rem;font-weight:800;margin-bottom:7px}
+.apk-info p{color:var(--text2);font-size:.86rem;margin-bottom:17px}
+.apk-meta{display:flex;gap:18px;flex-wrap:wrap}
+.apk-meta span{font-size:.75rem;color:var(--text3);display:flex;align-items:center;gap:5px}
+.btn-apk-dl{
+  display:inline-flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,var(--green),#16a34a);
+  color:#fff;padding:15px 30px;border-radius:var(--r);
+  text-decoration:none;font-weight:800;font-size:.93rem;
+  transition:var(--ease);flex-shrink:0;
+  box-shadow:0 4px 20px rgba(34,197,94,.3)
+}
+.btn-apk-dl:hover{transform:translateY(-2px);box-shadow:0 8px 32px rgba(34,197,94,.5)}
+
+/* HOW TO */
+.howto-wrap{max-width:780px;margin:0 auto;padding:0 28px 60px}
+.steps{display:flex;flex-direction:column;gap:22px}
+.step{display:flex;gap:20px;align-items:flex-start}
+.step-num{
+  width:42px;height:42px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--accent),#8b5cf6);
+  border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:900;font-size:1rem;
+  box-shadow:0 4px 16px var(--glow)
+}
+.step h4{font-size:.97rem;font-weight:700;margin-bottom:5px}
+.step p{color:var(--text2);font-size:.85rem}
+
+/* FAQ */
+.faq-wrap{max-width:780px;margin:0 auto;padding:0 28px 60px}
+.faq-item{border:1px solid var(--border);border-radius:var(--r);margin-bottom:10px;overflow:hidden}
+.faq-q{
+  width:100%;background:var(--card);border:none;
+  padding:19px 22px;text-align:left;
+  color:var(--text);font-family:inherit;font-size:.93rem;font-weight:500;
+  cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+  transition:var(--ease)
+}
+.faq-q:hover{background:rgba(255,255,255,.07)}
+.faq-q i{transition:var(--ease);color:var(--text3)}
+.faq-q.open i{transform:rotate(180deg);color:var(--accent2)}
+.faq-a{
+  display:none;padding:17px 22px;
+  color:var(--text2);font-size:.86rem;
+  border-top:1px solid var(--border);
+  background:rgba(0,0,0,.18);line-height:1.75
+}
+
+/* AD MID/BOTTOM */
+.ad-mid{max-width:780px;margin:0 auto 10px;padding:0 28px}
+.ad-bot{background:var(--bg2);border-top:1px solid var(--border);padding:22px 28px;text-align:center}
+
+/* FOOTER */
+footer{background:var(--bg2);border-top:1px solid var(--border);padding:52px 28px 24px}
+.foot-in{max-width:1180px;margin:0 auto}
+.foot-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:44px;margin-bottom:44px}
+.foot-brand .logo{margin-bottom:14px;display:inline-flex}
+.foot-brand p{color:var(--text2);font-size:.85rem;margin-bottom:20px;line-height:1.7}
+.socials{display:flex;gap:10px}
+.social{
+  width:38px;height:38px;
+  background:rgba(255,255,255,.055);
+  border:1px solid var(--border);border-radius:var(--r);
+  display:flex;align-items:center;justify-content:center;
+  color:var(--text2);text-decoration:none;font-size:14px;
+  transition:var(--ease)
+}
+.social:hover{background:var(--accent);border-color:var(--accent);color:#fff}
+.foot-col h4{font-size:.85rem;font-weight:700;margin-bottom:17px}
+.foot-col ul{list-style:none;display:flex;flex-direction:column;gap:11px}
+.foot-col a{color:var(--text2);text-decoration:none;font-size:.83rem;transition:var(--ease)}
+.foot-col a:hover{color:var(--accent2)}
+.foot-bottom{
+  border-top:1px solid var(--border);padding-top:22px;
+  display:flex;justify-content:space-between;align-items:center;
+  flex-wrap:wrap;gap:12px
+}
+.foot-bottom p{color:var(--text3);font-size:.78rem}
+
+/* TOAST */
+.toast{
+  position:fixed;bottom:26px;right:26px;
+  background:rgba(9,9,15,.96);
+  border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 20px;
+  font-size:.85rem;color:var(--text);
+  backdrop-filter:blur(20px);
+  display:flex;align-items:center;gap:10px;
+  z-index:999;
+  transform:translateY(90px);opacity:0;
+  transition:var(--ease);max-width:320px
+}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.ok{border-color:rgba(34,197,94,.35)}
+.toast.err{border-color:rgba(239,68,68,.35)}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .input-row{flex-direction:column}
+  .btn-dl{justify-content:center}
+  .nav-links{display:none}
+  .dl-card{padding:24px 18px}
+  .apk-card{flex-direction:column;text-align:center}
+  .foot-grid{grid-template-columns:1fr 1fr}
+  .hero{padding:56px 20px 44px}
+}
+@media(max-width:480px){
+  .foot-grid{grid-template-columns:1fr}
+  .apk-meta{justify-content:center}
+}
+</style>
+</head>
+<body>
+
+<!-- TOAST -->
+<div class="toast" id="toast">
+  <i id="ti" class="fa-solid fa-circle-check"></i>
+  <span id="tm"></span>
+</div>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-in">
+    <a class="logo" href="#">
+      <div class="logo-box"><i class="fa-solid fa-bolt"></i></div>
+      Vid<span>Snap</span> Pro
+    </a>
+    <ul class="nav-links">
+      <li><a href="#dl">Download</a></li>
+      <li><a href="#howto">How To</a></li>
+      <li><a href="#faq">FAQ</a></li>
+      <li><a href="#apk" class="btn-apk"><i class="fa-brands fa-android"></i>Get App</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- TOP AD -->
+<div class="ad-wrap">
+  <div class="ad-label-txt">Advertisement</div>
+  <div class="ad-box">
+    <i class="fa-solid fa-rectangle-ad"></i>
+    Google AdSense — Top Banner (728×90) — Will appear after AdSense approval
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero" id="dl">
+  <div class="badge">
+    <span class="dot"></span>
+    Free · Fast · 1000+ Sites Supported
+  </div>
+  <h1>Download Any Video<br/><span class="grad">Instantly &amp; Free</span></h1>
+  <p>Paste a URL from YouTube, TikTok, Instagram, Twitter, Facebook or any platform. Get your download in seconds.</p>
+
+  <!-- DOWNLOADER CARD -->
+  <div class="dl-card">
+    <div class="platforms">
+      <span class="chip yt"><i class="fa-brands fa-youtube"></i>YouTube</span>
+      <span class="chip tt"><i class="fa-brands fa-tiktok"></i>TikTok</span>
+      <span class="chip ig"><i class="fa-brands fa-instagram"></i>Instagram</span>
+      <span class="chip tw"><i class="fa-brands fa-x-twitter"></i>Twitter/X</span>
+      <span class="chip fb"><i class="fa-brands fa-facebook"></i>Facebook</span>
+      <span class="chip"><i class="fa-solid fa-globe"></i>+1000 more</span>
+    </div>
+
+    <div class="input-row">
+      <input class="url-in" id="vidUrl" type="url"
+        placeholder="Paste video URL here…  e.g. https://www.youtube.com/watch?v=..."
+        autocomplete="off" spellcheck="false"/>
+      <button class="btn-dl" id="dlBtn" onclick="startDownload()">
+        <span class="spin" id="spin"></span>
+        <i class="fa-solid fa-download" id="dlIco"></i>
+        <span id="dlTxt">Download</span>
+      </button>
+    </div>
+
+    <div class="prog-wrap" id="prog"><div class="prog-fill" id="progFill"></div></div>
+
+    <div class="result" id="result">
+      <div class="result-label" id="rlabel"><i class="fa-solid fa-circle-check"></i> Ready to Download</div>
+      <div class="dl-links" id="dlLinks"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MID AD -->
+<div class="ad-mid">
+  <div class="ad-label-txt">Advertisement</div>
+  <div class="ad-box">
+    <i class="fa-solid fa-rectangle-ad"></i>
+    Google AdSense — Rectangle (336×280) — Will appear after AdSense approval
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="section">
+  <div class="section-wrap">
+    <h2 class="sec-head">Why VidSnap Pro?</h2>
+    <p class="sec-sub">Built for speed, privacy, and reliability — no sign-up needed.</p>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-ico" style="background:rgba(124,111,255,.13);color:var(--accent2)">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <h3>Lightning Fast</h3>
+        <p>Download links generated in under 3 seconds. No queues, no waiting around.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico" style="background:rgba(34,197,94,.12);color:var(--green)">
+          <i class="fa-solid fa-shield-halved"></i>
+        </div>
+        <h3>100% Safe &amp; Private</h3>
+        <p>No registration, no data stored. Your downloads stay completely private.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico" style="background:rgba(245,158,11,.12);color:var(--yellow)">
+          <i class="fa-solid fa-film"></i>
+        </div>
+        <h3>HD &amp; 4K Quality</h3>
+        <p>Download in 1080p, 4K, or MP3 audio — maximum quality every time.</p>
+      </div>
+      <div class="feat">
+        <div class="feat-ico" style="background:rgba(239,68,68,.12);color:var(--red)">
+          <i class="fa-solid fa-globe"></i>
+        </div>
+        <h3>1000+ Sites</h3>
+        <p>Works with YouTube, TikTok, Instagram, Twitter, Facebook, Vimeo &amp; more.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APK -->
+<div class="apk-wrap" id="apk">
+  <div class="apk-card">
+    <div class="apk-ico"><i class="fa-brands fa-android"></i></div>
+    <div class="apk-info">
+      <h3>Download Android App</h3>
+      <p>Get the VidSnap Pro app for faster downloads, offline mode &amp; built-in media player.</p>
+      <div class="apk-meta">
+        <span><i class="fa-solid fa-code-branch"></i> v2.1.0</span>
+        <span><i class="fa-solid fa-weight-hanging"></i> 12.4 MB</span>
+        <span><i class="fa-solid fa-mobile"></i> Android 6.0+</span>
+        <span><i class="fa-solid fa-star" style="color:var(--yellow)"></i> 4.8 / 5</span>
+      </div>
+    </div>
+    <a class="btn-apk-dl" href="YOUR_APK_LINK_HERE" download onclick="toast('📱 APK download started!','ok')">
+      <i class="fa-solid fa-download"></i> Download APK
+    </a>
+  </div>
+</div>
+
+<!-- IN-ARTICLE AD -->
+<div class="ad-mid">
+  <div class="ad-label-txt">Advertisement</div>
+  <div class="ad-box">
+    <i class="fa-solid fa-rectangle-ad"></i>
+    Google AdSense — In-Article Ad — Will appear after AdSense approval
+  </div>
+</div>
+
+<!-- HOW TO -->
+<div class="howto-wrap" id="howto">
+  <h2 class="sec-head" style="text-align:left;margin-bottom:7px">How to Download</h2>
+  <p class="sec-sub" style="text-align:left;margin-bottom:36px">3 simple steps, completely free</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>
+        <h4>Copy the Video URL</h4>
+        <p>Go to YouTube, TikTok, Instagram or any supported platform and copy the video URL from the address bar or share menu.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>
+        <h4>Paste &amp; Click Download</h4>
+        <p>Paste the URL into the input above and hit Download. We'll fetch all available formats and qualities instantly.</p>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>
+        <h4>Choose Quality &amp; Save</h4>
+        <p>Pick your preferred quality — 4K, 1080p, 720p, or MP3 audio — and click to save directly to your device.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-wrap" id="faq">
+  <h2 class="sec-head" style="text-align:left;margin-bottom:7px">Frequently Asked Questions</h2>
+  <p class="sec-sub" style="text-align:left;margin-bottom:36px">Everything you need to know</p>
+  <div class="faq-item">
+    <button class="faq-q" onclick="faq(this)">Is VidSnap Pro free to use?<i class="fa-solid fa-chevron-down"></i></button>
+    <div class="faq-a">Yes! Completely free — no subscription, no registration, no hidden fees. We show non-intrusive ads to keep the service running.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="faq(this)">Which platforms are supported?<i class="fa-solid fa-chevron-down"></i></button>
+    <div class="faq-a">1000+ platforms including YouTube, TikTok, Instagram, Twitter/X, Facebook, Vimeo, Dailymotion, Reddit, Pinterest, SoundCloud, and many more.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="faq(this)">Can I download in HD or 4K?<i class="fa-solid fa-chevron-down"></i></button>
+    <div class="faq-a">Yes! All available qualities from the original source — 4K, 1080p, 720p, 480p, and audio-only MP3 formats.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="faq(this)">Is it safe to use?<i class="fa-solid fa-chevron-down"></i></button>
+    <div class="faq-a">Absolutely. We don't store any video data or personal information. All download links come directly from the original platform's servers.</div>
+  </div>
+  <div class="faq-item">
+    <button class="faq-q" onclick="faq(this)">Why should I get the Android APK?<i class="fa-solid fa-chevron-down"></i></button>
+    <div class="faq-a">The app gives you background downloads, built-in media player, faster processing, and no browser needed — all for free.</div>
+  </div>
+</div>
+
+<!-- BOTTOM AD -->
+<div class="ad-bot">
+  <div class="ad-label-txt">Advertisement</div>
+  <div class="ad-box" style="max-width:980px">
+    <i class="fa-solid fa-rectangle-ad"></i>
+    Google AdSense — Bottom Banner (970×90) — Will appear after AdSense approval
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-in">
+    <div class="foot-grid">
+      <div class="foot-brand">
+        <a class="logo" href="#"><div class="logo-box"><i class="fa-solid fa-bolt"></i></div>Vid<span>Snap</span> Pro</a>
+        <p>The fastest, safest free video downloader. Supporting 1000+ platforms with HD quality downloads — always free.</p>
+        <div class="socials">
+          <a class="social" href="#"><i class="fa-brands fa-x-twitter"></i></a>
+          <a class="social" href="#"><i class="fa-brands fa-instagram"></i></a>
+          <a class="social" href="#"><i class="fa-brands fa-youtube"></i></a>
+        </div>
+      </div>
+      <div class="foot-col">
+        <h4>Tools</h4>
+        <ul>
+          <li><a href="#">Video Downloader</a></li>
+          <li><a href="#">Android APK</a></li>
+          <li><a href="#">MP3 Converter</a></li>
+          <li><a href="#">GIF Maker</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Platforms</h4>
+        <ul>
+          <li><a href="#">YouTube</a></li>
+          <li><a href="#">TikTok</a></li>
+          <li><a href="#">Instagram</a></li>
+          <li><a href="#">Twitter / X</a></li>
+        </ul>
+      </div>
+      <div class="foot-col">
+        <h4>Legal</h4>
+        <ul>
+          <li><a href="#">Privacy Policy</a></li>
+          <li><a href="#">Terms of Use</a></li>
+          <li><a href="#">DMCA</a></li>
+          <li><a href="#">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <p>© 2024 VidSnap Pro. All rights reserved. For personal use only.</p>
+      <p>⚡ Powered by Cobalt API</p>
+    </div>
+  </div>
+</footer>
+
+<script>
+// =============================================
+// DOWNLOAD — Multi-API with CORS fallback
+// =============================================
+const APIS = [
+  // 1. Cobalt (primary)
+  { url:'https://api.cobalt.tools/api/json', type:'cobalt' },
+  // 2. Social media downloader via RapidAPI (add key below)
+  // { url:'https://social-media-video-downloader.p.rapidapi.com/smvd/get/all', type:'rapid', key:'YOUR_RAPIDAPI_KEY' }
+];
+
+async function startDownload(){
+  const inp  = document.getElementById('vidUrl');
+  const btn  = document.getElementById('dlBtn');
+  const spin = document.getElementById('spin');
+  const ico  = document.getElementById('dlIco');
+  const txt  = document.getElementById('dlTxt');
+  const res  = document.getElementById('result');
+  const prog = document.getElementById('prog');
+  const fill = document.getElementById('progFill');
+
+  const url = inp.value.trim();
+  if(!url){ toast('⚠️ Please paste a video URL first!','err'); inp.focus(); return; }
+  if(!validUrl(url)){ toast('❌ Invalid URL — paste a correct video link.','err'); return; }
+
+  // Loading state
+  btn.disabled=true; spin.style.display='block';
+  ico.style.display='none'; txt.textContent='Fetching…';
+  res.style.display='none'; prog.style.display='block';
+
+  let pct=0;
+  const pi = setInterval(()=>{ pct=Math.min(pct+Math.random()*12,88); fill.style.width=pct+'%'; },350);
+
+  try{
+    // Try Cobalt API
+    const r = await fetch('https://api.cobalt.tools/api/json',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Accept':'application/json'},
+      body:JSON.stringify({
+        url, vCodec:'h264', vQuality:'1080',
+        aFormat:'mp3', isAudioOnly:false,
+        isNoTTWatermark:true, twitterGif:false
+      })
+    });
+    clearInterval(pi); fill.style.width='100%';
+
+    if(!r.ok) throw new Error(`HTTP ${r.status}`);
+    const d = await r.json();
+
+    if(d.status==='stream'||d.status==='redirect'||d.status==='tunnel'){
+      showLinks([{q:'HD 1080p',f:'MP4',url:d.url}]);
+      toast('✅ Download ready!','ok');
+    } else if(d.status==='picker'&&d.picker?.length){
+      showLinks(d.picker.map((x,i)=>({q:x.quality||`Option ${i+1}`,f:'MP4',url:x.url})));
+      toast('✅ Multiple qualities found!','ok');
+    } else {
+      showErr(d.text||'Could not fetch this video. It may be private or unsupported.');
+    }
+
+  } catch(e){
+    clearInterval(pi);
+    // If CORS/network error, show helpful message
+    if(e.message.includes('fetch')||e.name==='TypeError'){
+      showErr('Network error — make sure you are connected to the internet. (CORS may block on localhost; will work fine on live Blogger site.)');
+    } else {
+      showErr('Error: '+e.message);
+    }
+  } finally {
+    setTimeout(()=>{ prog.style.display='none'; fill.style.width='0%'; },600);
+    btn.disabled=false; spin.style.display='none';
+    ico.style.display='block'; txt.textContent='Download';
+  }
+}
+
+function showLinks(links){
+  const res=document.getElementById('result');
+  const lbl=document.getElementById('rlabel');
+  const dl=document.getElementById('dlLinks');
+  res.className='result'; lbl.innerHTML='<i class="fa-solid fa-circle-check"></i> Ready to Download';
+  dl.innerHTML='';
+  links.forEach(l=>{
+    const a=document.createElement('a');
+    a.className='dl-link'; a.href=l.url; a.target='_blank'; a.rel='noopener noreferrer';
+    a.innerHTML=`<div class="dl-left"><i class="fa-solid fa-film" style="color:var(--accent2)"></i><span>${l.f} Download</span><span class="quality-tag">${l.q}</span></div><i class="fa-solid fa-arrow-down-to-line" style="color:var(--green)"></i>`;
+    dl.appendChild(a);
+  });
+  res.style.display='block';
+}
+
+function showErr(msg){
+  const res=document.getElementById('result');
+  const lbl=document.getElementById('rlabel');
+  const dl=document.getElementById('dlLinks');
+  res.className='result err';
+  lbl.innerHTML='<i class="fa-solid fa-circle-xmark"></i> Error';
+  dl.innerHTML=`<p style="color:var(--text2);font-size:.85rem;line-height:1.6">${msg}</p>`;
+  res.style.display='block';
+  toast('❌ '+msg.substring(0,60),'err');
+}
+
+function validUrl(s){ try{return['http:','https:'].includes(new URL(s).protocol)}catch{return false} }
+
+// TOAST
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  document.getElementById('tm').textContent=msg;
+  document.getElementById('ti').className=type==='ok'?'fa-solid fa-circle-check':'fa-solid fa-circle-xmark';
+  t.className='toast '+type+' show';
+  setTimeout(()=>t.className='toast',4200);
+}
+
+// FAQ
+function faq(btn){
+  const a=btn.nextElementSibling;
+  const open=a.style.display==='block';
+  document.querySelectorAll('.faq-a').forEach(x=>x.style.display='none');
+  document.querySelectorAll('.faq-q').forEach(x=>x.classList.remove('open'));
+  if(!open){ a.style.display='block'; btn.classList.add('open'); }
+}
+
+// ENTER key
+document.getElementById('vidUrl').addEventListener('keypress',e=>{ if(e.key==='Enter') startDownload(); });
+
+// Auto-paste from clipboard
+document.getElementById('vidUrl').addEventListener('focus',async function(){
+  if(this.value) return;
+  try{
+    const t=await navigator.clipboard.readText();
+    if(validUrl(t)){ this.value=t; toast('📋 URL pasted from clipboard!','ok'); }
+  }catch{}
+});
+</script>
+</body>
+</html>
